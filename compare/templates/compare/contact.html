@@ -45,7 +45,7 @@
     </div>
 
     <h1 class="heading">Contact Us</h1>
-    <form id="form-contact" class="row g-3 form-contact" method="post" action="/compare/contact/" name="contact-form">{% csrf_token %}
+    <form id="form-contact" class="row g-3 form-contact" method="POST" action="/compare/contact/" name="contact-form">{% csrf_token %}
         <div class="col-md-6">
             <label for="name" class="form-label">Name</label>
             <input type="text" class="form-control" id="name" name="name">

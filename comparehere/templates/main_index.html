@@ -32,7 +32,7 @@
   }
 
   .container-fluid h1 {
-    color: rgb(34, 119, 8);
+    color: rgb(108, 238, 1);
     text-align: center;
   }
 
@@ -42,10 +42,18 @@
     height: 100vh;
     z-index: 1;
     margin: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+
+
   }
 
   .btn {
     border-radius: 25px;
+    background-color: rgb(5, 92, 51);
   }
 </style>
 
@@ -56,7 +64,7 @@
     <div class="heading-container">
       <h1>Welcome to <strong>COMPARE HERE</strong></h1>
       <div class="d-grid gap-2 col-6 mx-auto">
-        <button class="btn btn-primary" type="button" id="redirect-button"><a href="/compare" style="color:white; text-decoration:none">Go to Compare
+        <button class="btn" type="button" id="redirect-button"><a href="/compare" style="color:rgb(241, 244, 247); text-decoration:none; font-size: 1.2rem; margin: 0.5rem 0 ; ">Go to Compare
             Items</a></button>
       </div>
     </div>

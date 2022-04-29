@@ -10,118 +10,119 @@ from django.http import HttpResponse
 
 
 def index(request):
+    try:
+        if request.method == "POST":
+            searchValue = request.POST.get('main-search-field', ' ')
+            print(searchValue)
 
-    if request.method == "POST":
-        searchValue = request.POST.get('main-search-field', ' ')
-        print(searchValue)
+            product_name = request.POST.get('mainSearchField', '')
+            
 
-        product_name = request.POST.get('mainSearchField', '')
-        # return HttpResponse("This is the main page of your compare app.")
+            # For Amazon
 
-        # For Amazon
+            def get_url(search_item):
+                temp = "https://www.amazon.com/s?k={}&currency=INR&ref=nb_sb_noss_2"
+                search_item = search_item.replace(" ", "+")
+                return temp.format(search_item)
 
-        def get_url(search_item):
-            temp = "https://www.amazon.com/s?k={}&currency=INR&ref=nb_sb_noss_2"
-            search_item = search_item.replace(" ", "+")
-            return temp.format(search_item)
+            driver = webdriver.Chrome(
+            #     # executable_path="D:\mini projects\chromedriver_win32\chromedriver")
+                executable_path="D:\college work\major_project\chromedriver")
+            url = get_url(searchValue)
+            driver.get(url)
+            
+            
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+        
+            result = soup.find_all(
+                'div', {"data-component-type": "s-search-result"})
+            for item in result:
+                
+                try:
+                    pre_final_heading = item.h2.a.span.text
+                    heading = pre_final_heading.strip()
+                    pre_price = item.find("span", {"class": "a-offscreen"})
+                    price = pre_price.string
+                    hyperlink = url
+                    amazon_image_url = item.find('img')['src']
+                    break
+                except:
+                    print("There is an error")
 
-        driver = webdriver.Chrome(
-            executable_path="D:\mini projects\chromedriver_win32\chromedriver")
-        url = get_url(searchValue)
-        driver.get(url)
+            # For Flipcart
 
-        # This is the code to get the page source of a url
-        # url = get_url(searchValue)
-        # page_source = requests.get(url,'html.parser').text
+            def get_flipcart_url(search_item):
+                temp = "https://www.flipkart.com/search?q={}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off"
+                search_item = search_item.replace(" ", "+")
+                return temp.format(search_item)
 
-        soup = BeautifulSoup(driver.page_source, 'html.parser')
-        result = soup.find_all(
-            'div', {"data-component-type": "s-search-result"})
-        for item in result:
-            # item = result[1]
-            try:
-                pre_final_heading = item.h2.a.span.text
-                heading = pre_final_heading.strip()
-                pre_price = item.find("span", {"class": "a-offscreen"})
-                price = pre_price.string
-                hyperlink = url
-                amazon_image_url = item.find('img')['src']
-                break
-            except:
-                print("There is an error")
+            flipcart_url = get_flipcart_url(searchValue)
+            flip_driver = webdriver.Chrome(
+                executable_path="D:\college work\major_project\chromedriver")
+            flip_driver.get(flipcart_url)
 
-        # For Flipcart
+            flip_soup = BeautifulSoup(flip_driver.page_source, "html.parser")
+            flip_result = flip_soup.find_all(
+                "a", {"class": "_1fQZEK", "rel": "noopener noreferrer"})
+            for flip_item in flip_result:
+               
+                try:
+                    flip_pre_heading = flip_item.find("div", {"class": "_4rR01T"})
+                    flip_heading = flip_pre_heading.string
+                    flip_price = flip_item.find(
+                        "div", {"class": "_30jeq3 _1_WHN1"}).string
+                    flip_link = flipcart_url
+                    flip_image_url = flip_item.find('img')['src']
+                    break
+                except:
+                    print("There is an error in flipkart scraping code.")
 
-        def get_flipcart_url(search_item):
-            temp = "https://www.flipkart.com/search?q={}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off"
-            search_item = search_item.replace(" ", "+")
-            return temp.format(search_item)
+            # For RelianceDigital
 
-        flipcart_url = get_flipcart_url(searchValue)
-        flip_driver = webdriver.Chrome(
-            executable_path="D:\mini projects\chromedriver_win32\chromedriver")
-        flip_driver.get(flipcart_url)
+            def get_RelianceDigital_url(search_item):
+                temp = "https://www.reliancedigital.in/search?q={}:relevance"
+                search_item = search_item.replace(" ", "+")
+                return temp.format(search_item)
 
-        flip_soup = BeautifulSoup(flip_driver.page_source, "html.parser")
-        flip_result = flip_soup.find_all(
-            "a", {"class": "_1fQZEK", "rel": "noopener noreferrer"})
-        for flip_item in flip_result:
-            # flip_item = flip_result[0]
-            try:
-                flip_pre_heading = flip_item.find("div", {"class": "_4rR01T"})
-                flip_heading = flip_pre_heading.string
-                flip_price = flip_item.find(
-                    "div", {"class": "_30jeq3 _1_WHN1"}).string
-                flip_link = flipcart_url
-                flip_image_url = flip_item.find('img')['src']
-                break
-            except:
-                print("There is an error in flipkart scraping code.")
+            relianceDigital_url = get_RelianceDigital_url(searchValue)
+            reliance_driver = webdriver.Chrome(
+                executable_path="D:\college work\major_project\chromedriver")
+            reliance_driver.get(relianceDigital_url)
 
-        # For RelianceDigital
+            
+            reliance_soup = BeautifulSoup(
+                reliance_driver.page_source, "html.parser")
 
-        def get_RelianceDigital_url(search_item):
-            temp = "https://www.reliancedigital.in/search?q={}:relevance"
-            search_item = search_item.replace(" ", "+")
-            return temp.format(search_item)
+            reliance_result = reliance_soup.find_all(
+                "div", {"class": "sp__product"})
 
-        relianceDigital_url = get_RelianceDigital_url(searchValue)
-        reliance_driver = webdriver.Chrome(
-            executable_path="D:\mini projects\chromedriver_win32\chromedriver")
-        reliance_driver.get(relianceDigital_url)
+            for reliance_item in reliance_result:
+                try:
+                    reliance_pre_heading = reliance_item.find(
+                        "p", {"class": "sp__name"})
+                    reliance_heading = reliance_pre_heading.string
+                    reliance_pre_price = reliance_item.find(
+                        "span", {"class": "sc-bxivhb"}).find_all("span")[1]
+                    reliance_price = reliance_pre_price.string
+                    reliance_image_url = reliance_item.find('img')['src']
 
-        print("--------------------------------------------------------------------------------------------------------")
-        print("Result is printed below")
-        reliance_soup = BeautifulSoup(
-            reliance_driver.page_source, "html.parser")
+                    # Reliance stores its image in a static file not in a url form so we can use same image as we use in amazon.
+                    break
 
-        reliance_result = reliance_soup.find_all(
-            "div", {"class": "sp__product"})
+                except:
+                    print(
+                        "There is an error. Please remove error first and try again later.")
 
-        for reliance_item in reliance_result:
-            try:
-                reliance_pre_heading = reliance_item.find(
-                    "p", {"class": "sp__name"})
-                reliance_heading = reliance_pre_heading.string
-                reliance_pre_price = reliance_item.find(
-                    "span", {"class": "sc-bxivhb"}).find_all("span")[1]
-                reliance_price = reliance_pre_price.string
-                reliance_image_url = reliance_item.find('img')['src']
+            param = {
+                'heading': heading, 'price': price, 'link': hyperlink, 'flip_heading': flip_heading, 'flip_price': flip_price, 'flip_link': flip_link,
+                'amazon_image_url': amazon_image_url, 'flip_image_url': flip_image_url, 'reliance_heading': reliance_heading,
+                'reliance_price': reliance_price, 'relianceDigital_url': relianceDigital_url
+            }
+            return render(request, "compare/productView.html", param)
+        return render(request, "compare/index.html")
 
-                # Reliance stores its image in a static file not in a url form so we can use same image as we use in amazon.
-                break
-
-            except:
-                print(
-                    "There is an error. Please remove error first and try again later.")
-
-        param = {
-            'heading': heading, 'price': price, 'link': hyperlink, 'flip_heading': flip_heading, 'flip_price': flip_price, 'flip_link': flip_link,
-            'amazon_image_url': amazon_image_url, 'flip_image_url': flip_image_url, 'reliance_heading': reliance_heading,
-            'reliance_price': reliance_price, 'relianceDigital_url': relianceDigital_url
-        }
-        return render(request, "compare/productView.html", param)
-    return render(request, "compare/index.html")
+    except:
+        return render(request,"compare/error_page.html")  
 
 
 def chatbot(request):
@@ -131,8 +132,8 @@ def chatbot(request):
 
 def contact(request):
     # return HttpResponse("This is the Contact Us page of compare app.")
-
-    if request.method == "POST":
+    print("Yahan tak to puhan raha hai.***************")
+    if request.method == "GET":
         name = request.POST.get('name', '')
         email = request.POST.get('email', '')
         phone = request.POST.get('phone', '')
@@ -142,9 +143,7 @@ def contact(request):
         zip = request.POST.get('zip', '')
         query = request.POST.get('query', '')
 
-        print("------------------------------------------------")
-        print(name, email, city)
-
+       
         contact = Contact(name=name, email=email, phone=phone,
                           address=address, city=city, state=state, zip=zip, query=query)
         print(contact)
@@ -154,5 +153,4 @@ def contact(request):
 
 
 def about(request):
-    # return HttpResponse("This is the about page of compare app.")
     return render(request, "compare/about.html")
